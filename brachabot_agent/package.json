@@ -1,0 +1,12 @@
+{
+  "name": "brachabot-agent",
+  "version": "1.0.0",
+  "description": "BrachaBOT local polling agent — runs on the shop's PC and sends print jobs to the printer",
+  "main": "agent.js",
+  "scripts": {
+    "start": "node agent.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
+}
