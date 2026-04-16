@@ -3,6 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { PDFDocument } = require('pdf-lib');
+const OpenAI = require('openai');
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const app = express();
 const PORT = 3000;
@@ -213,6 +216,35 @@ app.post('/jobs/:shopId/:jobId/status', requireAgentSecret, (req, res) => {
 
   console.log(`Job ${jobId} marked as ${status} for shop: ${shopId}`);
   return res.json({ success: true });
+});
+
+// POST /generate-greeting — AI greeting generation via OpenAI
+app.post('/generate-greeting', async (req, res) => {
+  try {
+    const { recipient, name, ageRange, occasion } = req.body;
+
+    if (!recipient || !name || !occasion) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const prompt = `אתה עוזר שכותב ברכות בעברית בלבד.
+כתוב ברכה אישית, חמה וקצרה בעברית ${recipient} בשם ${name} (גיל: ${ageRange}) לרגל ${occasion}.
+הברכה צריכה להיות 2-4 משפטים, לא להתחיל במילה "ברכות", ולהיות מיוחדת ואישית.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
+    });
+
+    const greeting = completion.choices[0].message.content.trim();
+    console.log(`Generated greeting for ${name} (${recipient}, ${occasion})`);
+
+    return res.json({ greeting });
+  } catch (error) {
+    console.error('Error generating greeting:', error);
+    return res.status(500).json({ error: 'Failed to generate greeting' });
+  }
 });
 
 // Serve Flutter web build (run `flutter build web` first)

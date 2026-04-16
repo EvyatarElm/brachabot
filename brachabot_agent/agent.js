@@ -7,11 +7,11 @@ const os = require('os');
 // -----------------------------------------------------------------------
 // Configuration — set these as environment variables on the local PC
 // -----------------------------------------------------------------------
-const CLOUD_SERVER_URL = process.env.CLOUD_SERVER_URL || 'https://brachabot.up.railway.app';
-const SHOP_ID = process.env.SHOP_ID; // e.g. 'yotam_flowers' — REQUIRED
-const AGENT_SECRET = process.env.AGENT_SECRET || 'dev-secret';
+const CLOUD_SERVER_URL = process.env.CLOUD_SERVER_URL || 'https://brachabot-production.up.railway.app';
+const SHOP_ID = 'yotam_flowers'; // e.g. 'yotam_flowers' — REQUIRED
+const AGENT_SECRET = 'super_secret_key_of_yotam_flower_shop';
 const POLL_INTERVAL_MS = parseInt(process.env.POLL_INTERVAL_MS || '5000', 10);
-const PRINTER_NAME = process.env.PRINTER_NAME || ''; // blank = use default printer
+const PRINTER_NAME = process.env.PRINTER_NAME || 'HP126DCB (HP Smart Tank 750 series)';
 const SUMATRA_PATH =
   process.env.SUMATRA_PATH ||
   'C:\\Program Files\\SumatraPDF\\SumatraPDF.exe';
@@ -29,6 +29,9 @@ const JOBS_DIR = path.join(__dirname, 'downloaded_jobs');
 if (!fs.existsSync(JOBS_DIR)) fs.mkdirSync(JOBS_DIR);
 
 const agentHeaders = { 'x-agent-secret': AGENT_SECRET };
+
+// Tracks jobs currently being processed to prevent duplicate processing
+const processingJobs = new Set();
 
 // -----------------------------------------------------------------------
 // Polling loop
@@ -52,7 +55,9 @@ async function poll() {
     }
 
     for (const job of pendingJobs) {
-      await processJob(job.jobId);
+      if (processingJobs.has(job.jobId)) continue;
+      processingJobs.add(job.jobId);
+      processJob(job.jobId).finally(() => processingJobs.delete(job.jobId));
     }
   } catch (err) {
     console.error('Network error during poll:', err.message);
@@ -105,20 +110,24 @@ function printPdf(pdfPath) {
   const platform = os.platform();
 
   if (platform === 'win32') {
-    if (fs.existsSync(SUMATRA_PATH)) {
-      const printerArg = PRINTER_NAME
-        ? `-print-to "${PRINTER_NAME}"`
-        : '-print-to-default';
-      execSync(`"${SUMATRA_PATH}" -exit-when-done ${printerArg} "${pdfPath}"`);
-    } else {
-      // Fallback: hand off to the default PDF reader via PowerShell
-      const printerArg = PRINTER_NAME
-        ? `-Printer "${PRINTER_NAME}"`
-        : '';
-      execSync(
-        `powershell -command "Start-Process -FilePath '${pdfPath}' -Verb PrintTo ${printerArg} -Wait"`
+    const sumatraCandidates = [
+      SUMATRA_PATH,
+      `C:\\Users\\${os.userInfo().username}\\AppData\\Local\\SumatraPDF\\SumatraPDF.exe`,
+      'C:\\Program Files\\SumatraPDF\\SumatraPDF.exe',
+      'C:\\Program Files (x86)\\SumatraPDF\\SumatraPDF.exe',
+    ];
+
+    const sumatraExe = sumatraCandidates.find(p => fs.existsSync(p));
+
+    if (!sumatraExe) {
+      throw new Error(
+        'SumatraPDF not found. Please install it from https://www.sumatrapdfreader.org'
       );
     }
+
+    const printerArg = PRINTER_NAME ? `-print-to "${PRINTER_NAME}"` : '-print-to-default';
+    execSync(`"${sumatraExe}" -exit-when-done ${printerArg} "${pdfPath}"`);
+
   } else if (platform === 'linux' || platform === 'darwin') {
     const printerArg = PRINTER_NAME ? `-d "${PRINTER_NAME}"` : '';
     execSync(`lp ${printerArg} "${pdfPath}"`);

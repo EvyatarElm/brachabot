@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
+import 'ai_greeting_screen.dart';
 
 class GreetingEditorScreen extends StatefulWidget {
   final CategoryItem category;
@@ -47,7 +48,7 @@ Future<String?> _capturePreviewAsBase64() async {
 }
 
   Future<void> _sendPrintRequest() async {
-  const serverUrl = 'https://brachabot.up.railway.app/print';
+  const serverUrl = 'https://brachabot-production.up.railway.app/print';
 
   try {
     await Future.delayed(const Duration(milliseconds: 50));
@@ -181,7 +182,34 @@ Future<String?> _capturePreviewAsBase64() async {
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () async {
+              final greeting = await Navigator.of(context).push<String>(
+                MaterialPageRoute(
+                  builder: (_) => const AiGreetingScreen(),
+                ),
+              );
+              if (greeting != null && mounted) {
+                _textController.text = greeting;
+                setState(() {});
+              }
+            },
+            icon: const Icon(Icons.auto_awesome, size: 18),
+            label: const Text('הגרל ברכה'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFFB7885C),
+              side: const BorderSide(color: Color(0xFFB7885C)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         TextField(
           controller: _textController,
           maxLines: 5,

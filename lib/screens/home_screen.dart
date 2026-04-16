@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
+import '../data/shops_data.dart';
+import '../models/shop_item.dart';
 import 'categories_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  final String shopId;
+class HomeScreen extends StatefulWidget {
+  final String initialShopId;
 
-  const HomeScreen({super.key, required this.shopId});
+  const HomeScreen({super.key, required this.initialShopId});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  ShopItem? _selectedShop;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-select shop if one was provided via URL (?shop=) or dart-define
+    if (widget.initialShopId.isNotEmpty && widget.initialShopId != 'unknown_shop') {
+      _selectedShop = shops.where((s) => s.id == widget.initialShopId).firstOrNull;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +47,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-           SafeArea(
+          SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
@@ -51,7 +69,7 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       children: [
                         const Text(
-                          'BARACHA BOT',
+                          'BRACHA BOT',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 18,
@@ -82,20 +100,64 @@ class HomeScreen extends StatelessWidget {
                             color: Color(0xFF5E5853),
                           ),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
+
+                        // Shop dropdown
+                        Directionality(
+                          textDirection: TextDirection.rtl,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFB7885C)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<ShopItem>(
+                                value: _selectedShop,
+                                isExpanded: true,
+                                hint: const Text(
+                                  'בחר חנות להדפסה',
+                                  style: TextStyle(color: Color(0xFF9E8C7E)),
+                                ),
+                                icon: const Icon(Icons.keyboard_arrow_down,
+                                    color: Color(0xFFB7885C)),
+                                items: shops.map((shop) {
+                                  return DropdownMenuItem<ShopItem>(
+                                    value: shop,
+                                    child: Text(shop.displayName),
+                                  );
+                                }).toList(),
+                                onChanged: (ShopItem? value) {
+                                  setState(() => _selectedShop = value);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 16),
+
+                        // Start button — disabled until a shop is selected
                         SizedBox(
                           width: double.infinity,
                           height: 58,
                           child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => CategoriesScreen(shopId: shopId),
-                                ),
-                              );
-                            },
+                            onPressed: _selectedShop == null
+                                ? null
+                                : () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => CategoriesScreen(
+                                          shopId: _selectedShop!.id,
+                                        ),
+                                      ),
+                                    );
+                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFB7885C),
+                              disabledBackgroundColor: const Color(0xFFD9C4B0),
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
@@ -108,7 +170,7 @@ class HomeScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                 ),
+                              ),
                             ),
                           ),
                         ),

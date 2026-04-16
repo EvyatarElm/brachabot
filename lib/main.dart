@@ -3,10 +3,20 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'screens/home_screen.dart';
 
 void main() {
-  String shopId = 'unknown_shop';
-  if (kIsWeb) {
+  // 1. Check for a compile-time override (used when running on Android/iOS for testing)
+  //    e.g. flutter run --dart-define=SHOP_ID=yotam_flowers
+  const String dartDefineShopId = String.fromEnvironment('SHOP_ID');
+
+  String shopId;
+  if (dartDefineShopId.isNotEmpty) {
+    shopId = dartDefineShopId;
+  } else if (kIsWeb) {
+    // 2. On web, read from the URL query param set by the QR code
     shopId = Uri.base.queryParameters['shop'] ?? 'unknown_shop';
+  } else {
+    shopId = 'unknown_shop';
   }
+
   runApp(BrachaBotApp(shopId: shopId));
 }
 
@@ -28,7 +38,7 @@ class BrachaBotApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      home: HomeScreen(shopId: shopId),
+      home: HomeScreen(initialShopId: shopId),
     );
   }
 }
