@@ -29,6 +29,15 @@ const List<String> ageRanges = [
   '70+',
 ];
 
+const List<String> greetingStyles = [
+  'חם ואישי',
+  'הומוריסטי',
+  'רומנטי',
+  'מרגש',
+  'שובב',
+  'רשמי',
+];
+
 const Map<String, List<String>> occasionsByRecipient = {
   'wife': ['יום האהבה', 'יום נישואים', 'יום הולדת', 'פסח', 'ראש השנה', 'שישי סתם'],
   'husband': ['יום האהבה', 'יום נישואים', 'יום הולדת', 'פסח', 'ראש השנה', 'שישי סתם'],

@@ -19,6 +19,7 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
   final TextEditingController _nameController = TextEditingController();
   String? _ageRange;
   String? _occasion;
+  String? _style;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -45,13 +46,15 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
         return _ageRange != null;
       case 3:
         return _occasion != null;
+      case 4:
+        return _style != null;
       default:
         return false;
     }
   }
 
   void _next() {
-    if (_step < 3) {
+    if (_step < 4) {
       setState(() => _step++);
     } else {
       _generate();
@@ -74,6 +77,7 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
       name: _nameController.text.trim(),
       ageRange: _ageRange!,
       occasion: _occasion!,
+      style: _style!,
     );
 
     try {
@@ -86,6 +90,7 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
           'name': answers.name,
           'ageRange': answers.ageRange,
           'occasion': answers.occasion,
+          'style': answers.style,
         }),
       );
 
@@ -165,7 +170,7 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
 
   Widget _buildProgress() {
     return Row(
-      children: List.generate(4, (i) {
+      children: List.generate(5, (i) {
         final isActive = i <= _step;
         return Expanded(
           child: Container(
@@ -191,6 +196,8 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
         return _buildAgeStep();
       case 3:
         return _buildOccasionStep();
+      case 4:
+        return _buildStyleStep();
       default:
         return const SizedBox.shrink();
     }
@@ -301,6 +308,29 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
     );
   }
 
+  Widget _buildStyleStep() {
+    return Column(
+      key: const ValueKey('step4'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildQuestion('מה אופי הברכה?'),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: greetingStyles.map((s) {
+            return _buildOptionTile(
+              label: s,
+              isSelected: _style == s,
+              onTap: () => setState(() => _style = s),
+              width: 120,
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLoading() {
     return Center(
       key: const ValueKey('loading'),
@@ -385,7 +415,7 @@ class _AiGreetingScreenState extends State<AiGreetingScreen> {
   }
 
   Widget _buildNextButton() {
-    final isLast = _step == 3;
+    final isLast = _step == 4;
     return SizedBox(
       width: double.infinity,
       height: 54,

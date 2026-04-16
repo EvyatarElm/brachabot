@@ -221,15 +221,31 @@ app.post('/jobs/:shopId/:jobId/status', requireAgentSecret, (req, res) => {
 // POST /generate-greeting — AI greeting generation via OpenAI
 app.post('/generate-greeting', async (req, res) => {
   try {
-    const { recipient, name, ageRange, occasion } = req.body;
+    const { recipient, name, ageRange, occasion, style } = req.body;
 
-    if (!recipient || !name || !occasion) {
+    if (!recipient || !name || !occasion || !style) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    const prompt = `אתה עוזר שכותב ברכות בעברית בלבד.
-כתוב ברכה אישית, חמה וקצרה בעברית ${recipient} בשם ${name} (גיל: ${ageRange}) לרגל ${occasion}.
-הברכה צריכה להיות 2-4 משפטים, לא להתחיל במילה "ברכות", ולהיות מיוחדת ואישית.`;
+    const prompt = `כתוב ברכה קצרה (שניים או שלושה משפטים), אישית, טבעית ונעימה בעברית, שמתאימה להדפסה על כרטיס ברכה קטן.
+
+פרטי ההקשר:
+- למי מיועדת הברכה: ${recipient}
+- שם הנמען/ת: ${name}
+- טווח גילאים: ${ageRange}
+- סוג המאורע: ${occasion}
+- אופי הברכה: ${style}
+
+הנחיות:
+- הברכה צריכה להיות קצרה ומתאימה לכרטיס פיזי קטן.
+- יש לשמור על עברית תקינה, זורמת וטבעית.
+- יש להתאים את הניסוח לגיל, למאורע, ולקהל היעד.
+- יש להתאים את הטון לסגנון המבוקש.
+- אין לכתוב ברכה גנרית מדי או רשמית מדי, אלא אם זה נדרש לפי הסגנון.
+- אין להוסיף כותרות, הסברים, מרכאות או טקסט נוסף.
+- החזר רק את נוסח הברכה עצמה.
+
+אם רלוונטי, שלב את שם הנמען/ת בצורה טבעית בתוך הברכה.`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',

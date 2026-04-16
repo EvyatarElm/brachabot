@@ -4,6 +4,7 @@ class GreetingAnswers {
   final String name;
   final String ageRange;
   final String occasion;
+  final String style;
 
   const GreetingAnswers({
     required this.recipientId,
@@ -11,5 +12,6 @@ class GreetingAnswers {
     required this.name,
     required this.ageRange,
     required this.occasion,
+    required this.style,
   });
 }
