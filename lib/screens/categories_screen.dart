@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -40,7 +41,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ) ??
         false;
 
-    String? imagePath;
+    Uint8List? imageBytes;
 
     if (addImage) {
       final XFile? pickedFile = await _picker.pickImage(
@@ -52,7 +53,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         return;
       }
 
-      imagePath = pickedFile.path;
+      imageBytes = await pickedFile.readAsBytes();
     }
 
     if (!mounted) return;
@@ -61,7 +62,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       MaterialPageRoute(
         builder: (_) => GreetingEditorScreen(
           category: category,
-          userImagePath: imagePath,
+          userImageBytes: imageBytes,
           shopId: widget.shopId,
         ),
       ),

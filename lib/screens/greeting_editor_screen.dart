@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../models/category_item.dart';
 import 'dart:convert';
@@ -9,13 +9,13 @@ import 'ai_greeting_screen.dart';
 
 class GreetingEditorScreen extends StatefulWidget {
   final CategoryItem category;
-  final String? userImagePath;
+  final Uint8List? userImageBytes;
   final String shopId;
 
   const GreetingEditorScreen({
     super.key,
     required this.category,
-    this.userImagePath,
+    this.userImageBytes,
     required this.shopId,
   });
 
@@ -103,7 +103,7 @@ Future<String?> _capturePreviewAsBase64() async {
     super.dispose();
   }
 
-  bool get hasUserImage => widget.userImagePath != null;
+  bool get hasUserImage => widget.userImageBytes != null;
 
   @override
   Widget build(BuildContext context) {
@@ -278,8 +278,8 @@ Future<String?> _capturePreviewAsBase64() async {
                 height: leftRect.height,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(6),
-                  child: Image.file(
-                    File(widget.userImagePath!),
+                  child: Image.memory(
+                    widget.userImageBytes!,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
