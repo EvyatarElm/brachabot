@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'ai_greeting_screen.dart';
+import 'thank_you_screen.dart';
 
 class GreetingEditorScreen extends StatefulWidget {
   final CategoryItem category;
@@ -74,8 +75,8 @@ Future<String?> _capturePreviewAsBase64() async {
     if (!mounted) return;
 
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('בקשת ההדפסה נשלחה')),
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const ThankYouScreen()),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
