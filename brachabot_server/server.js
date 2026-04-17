@@ -103,7 +103,7 @@ async function createPrintableCardPdf(imagePath, outputPdfPath) {
 // Routes
 // -----------------------------------------------------------------------
 
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.send('Bracha Bot server is running');
 });
 
